@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Job Postings - LaborPortal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#137fec", "background-light": "#f6f7f8", "background-dark": "#101922", "card-bg-light": "#ffffff", "card-bg-dark": "#182431" }, fontFamily: { display: ["Inter", "sans-serif"] }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" } } } };
+    </script>
+    <style> body { min-height: max(884px, 100dvh); } </style>
+  </head>
+  <body class="font-display bg-background-light dark:bg-background-dark">
+    <div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden text-[#111418] dark:text-white">
+      <div class="flex items-center bg-card-bg-light dark:bg-card-bg-dark p-4 pb-2 justify-between sticky top-0 z-10">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-3xl">menu</span><h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">My Job Postings</h2></div>
+        <div class="flex items-center gap-2">
+          <button id="logout-btn" class="text-sm px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800">Logout</button>
+          <a href="./post.html" class="flex items-center justify-center gap-2 h-10 px-4 bg-orange-500 text-white text-sm font-bold rounded-full shadow"><span class="material-symbols-outlined">add</span><span>Post Job</span></a>
+        </div>
+      </div>
+      <div id="job-list" class="flex flex-col gap-3 p-4"></div>
+    </div>
+    <script src="./js/data.js"></script>
+    <script src="./js/storage.js"></script>
+    <script>
+      const guard = LPStorage.requireRole("recruiter");
+      if (!guard.ok) window.location.href = "./recruiter-login.html";
+      const session = LPStorage.getSession();
+      document.getElementById("logout-btn").addEventListener("click", () => { LPStorage.logout(); window.location.href = "./index.html"; });
+      function renderJobs() {
+        const container = document.getElementById("job-list");
+        container.innerHTML = "";
+        const jobs = LPStorage.getJobsForRecruiter(session.username);
+        if (jobs.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "flex flex-col items-center justify-center text-center p-8 mt-8 bg-card-bg-light dark:bg-card-bg-dark rounded-xl";
+          empty.innerHTML = `<span class="material-symbols-outlined text-6xl text-gray-400 mb-4">work_outline</span><h3 class="text-lg font-bold mb-2">You have no active jobs</h3><p class="text-gray-500 mb-6">Post a new job to find laborers.</p><a href="./post.html" class="flex items-center justify-center gap-2 h-12 px-6 bg-orange-500 text-white text-base font-bold rounded-full shadow"><span class="material-symbols-outlined">add</span><span>Post New Job</span></a>`;
+          container.appendChild(empty);
+          return;
+        }
+        jobs.forEach(job => {
+          const hired = job.applicants.length;
+          const statusLabel = hired >= job.requiredCount ? "Filled" : (hired === 0 ? "Needs Applicants" : "Active");
+          const statusColor = hired >= job.requiredCount ? "text-gray-600 bg-gray-200" : (hired === 0 ? "text-orange-500 bg-orange-500/10" : "text-green-600 bg-green-500/10");
+          const card = document.createElement("div");
+          card.className = "flex flex-col rounded-xl shadow bg-card-bg-light dark:bg-card-bg-dark";
+          card.innerHTML = `
+            <div class="flex w-full flex-col gap-3 p-4">
+              <div class="flex items-center justify-between">
+                <p class="${statusColor} text-sm font-bold rounded-full px-3 py-1">${statusLabel}</p>
+                <span class="text-gray-500 text-sm">${new Date(job.createdAt).toLocaleDateString()}</span>
+              </div>
+              <p class="text-lg font-bold">${job.title}</p>
+              <p class="text-gray-600 dark:text-gray-300">${job.description}</p>
+              <div class="text-sm text-gray-600 dark:text-gray-300 flex flex-wrap gap-4">
+                ${job.location ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">location_on</span>${job.location}</span>` : ``}
+                ${job.startDateTime ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">calendar_month</span>${new Date(job.startDateTime).toLocaleString()}</span>` : ``}
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-3 text-primary">
+                  <div class="flex items-center gap-1"><span class="material-symbols-outlined">payments</span><span class="font-bold">₹${job.pricePerHour}/hr</span></div>
+                  <div class="flex items-center gap-1"><span class="material-symbols-outlined">groups</span><span class="font-bold">${hired} / ${job.requiredCount}</span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button data-id="${job.id}" class="delete-btn flex items-center justify-center rounded-lg h-10 w-10 bg-red-600 text-white"><span class="material-symbols-outlined">delete</span></button>
+                </div>
+              </div>
+              <div class="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+                <p class="font-semibold mb-2">Applicants</p>
+                ${hired === 0 ? `<p class="text-sm text-gray-500">No applicants yet.</p>` : `
+                  <div class="flex flex-col gap-2">
+                    ${job.applicants.map(a => `
+                      <div class="flex items-center justify-between bg-white/50 dark:bg-black/20 rounded-lg px-3 py-2">
+                        <div class="flex flex-col"><span class="text-sm font-medium">${a.name || a.user || 'Unknown'}</span><span class="text-xs text-gray-500">${a.contact ? 'Contact: ' + a.contact : ''}</span></div>
+                        <span class="text-xs text-gray-500">${a.appliedAt ? new Date(a.appliedAt).toLocaleString() : ''}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+        container.querySelectorAll(".delete-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            if (!confirm("Delete this job?")) return;
+            LPStorage.deleteJob(id, session.username);
+            renderJobs();
+          });
+        });
+      }
+      renderJobs();
+    </script>
+  </body>
+</html>
+
+

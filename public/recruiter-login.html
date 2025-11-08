@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Recruiter Sign In - LaborPortal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#137fec", "background-light": "#f6f7f8", "background-dark": "#101922" }, fontFamily: { display: ["Inter", "sans-serif"] }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" } } } };</script>
+    <style> body { min-height: max(884px, 100dvh); } </style>
+  </head>
+  <body class="font-display bg-background-light dark:bg-background-dark">
+    <div class="relative flex min-h-screen w-full flex-col items-center justify-center group/design-root overflow-x-hidden p-4">
+      <div class="flex w-full max-w-md flex-col items-center gap-6 bg-white dark:bg-slate-900 rounded-xl p-6 shadow">
+        <div class="flex flex-col items-center gap-4 text-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary"><span class="material-symbols-outlined text-3xl text-white">groups</span></div>
+          <h1 class="text-2xl font-bold tracking-tight text-[#111418] dark:text-white">Recruiter Sign In</h1>
+          <p class="text-sm text-[#617589] dark:text-gray-400">Access your dashboard to post and manage jobs.</p>
+        </div>
+        <div class="flex w-full flex-col items-stretch gap-4">
+          <label class="flex flex-col"><p class="pb-2 text-sm font-medium text-[#111418] dark:text-gray-300">Email Address</p><input id="email" class="form-input h-12 w-full flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-base text-[#111418] dark:text-white placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="recruiter@demo.com" /></label>
+          <label class="flex flex-col"><div class="flex items-baseline justify-between"><p class="pb-2 text-sm font-medium text-[#111418] dark:text-gray-300">Password</p></div><input id="password" class="form-input h-12 w-full flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-base text-[#111418] dark:text-white placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="1234" type="password" /></label>
+          <p id="login-error" class="text-sm text-red-600 hidden">Invalid credentials</p>
+          <button id="login-btn" class="flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-base font-semibold text-white hover:bg-primary/90">Sign In</button>
+          <a href="./index.html" class="text-center text-sm text-primary underline">Back to jobs</a>
+        </div>
+      </div>
+    </div>
+    <script src="./js/data.js"></script>
+    <script src="./js/storage.js"></script>
+    <script>
+      LPStorage.ensureSeedData();
+      document.getElementById("login-btn").addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const err = document.getElementById("login-error");
+        try {
+          const res = await LPStorage.verifyOrSetupRecruiter(email, password);
+          if (!res.ok) { err.textContent = res.error || "Invalid credentials"; err.classList.remove("hidden"); return; }
+          err.classList.add("hidden");
+          window.location.href = "./recruiter.html";
+        } catch (e) {
+          err.textContent = "Unexpected error";
+          err.classList.remove("hidden");
+        }
+      });
+    </script>
+  </body>
+</html>
+
+

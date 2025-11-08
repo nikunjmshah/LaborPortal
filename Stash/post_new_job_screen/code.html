@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Job Posting</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col font-display group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-white dark:bg-background-dark dark:border-b dark:border-slate-800 p-4 pb-2 justify-between sticky top-0 z-10">
+<button class="text-slate-800 dark:text-slate-200 flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-800 dark:text-slate-200 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Create New Job</h2>
+<div class="size-12 shrink-0"></div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 px-4 py-3 flex flex-col gap-6">
+<!-- Job Description TextField -->
+<div class="flex flex-col">
+<label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="job-description">Job Description</label>
+<div class="relative">
+<textarea class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-800 dark:text-slate-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-primary min-h-36 placeholder:text-slate-400 dark:placeholder:text-slate-500 p-4 text-base font-normal leading-normal" id="job-description" placeholder="e.g., 'Warehouse loading and unloading for 8 hours'"></textarea>
+<p class="absolute bottom-2 right-3 text-sm text-slate-400 dark:text-slate-500">0/250</p>
+</div>
+</div>
+<!-- Price and Laborers Section -->
+<div class="flex w-full flex-wrap items-end gap-4">
+<!-- Price per Hour TextField -->
+<div class="flex flex-col min-w-40 flex-1">
+<label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="price-per-hour">Price per Hour</label>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+<span class="text-slate-400 dark:text-slate-500">$</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-800 dark:text-slate-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-primary h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 pl-8 pr-4 py-2 text-base font-normal leading-normal" id="price-per-hour" placeholder="25" type="number" value=""/>
+</div>
+</div>
+<!-- Number of Laborers Stepper -->
+<div class="flex flex-col min-w-40 flex-1">
+<label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="num-laborers">Number of Laborers</label>
+<div class="flex items-center h-14 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary">
+<button class="px-4 text-primary h-full rounded-l-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-xl">remove</span>
+</button>
+<input class="form-input w-full min-w-0 flex-1 text-center border-0 bg-transparent text-slate-800 dark:text-slate-200 focus:outline-0 focus:ring-0 h-full p-0 text-base font-normal leading-normal" id="num-laborers" type="number" value="1"/>
+<button class="px-4 text-primary h-full rounded-r-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-xl">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- In-line Validation Message Example -->
+<div class="flex items-center gap-2 text-red-600 dark:text-red-500 hidden">
+<span class="material-symbols-outlined text-lg">error_outline</span>
+<p class="text-sm font-medium">Description cannot be empty.</p>
+</div>
+</main>
+<!-- Footer with Post Job Button -->
+<footer class="sticky bottom-0 bg-white dark:bg-background-dark/80 backdrop-blur-sm p-4 border-t border-slate-200 dark:border-slate-800">
+<button class="flex min-w-[84px] max-w-[480px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 flex-1 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed">
+<span class="truncate">Post Job</span>
+</button>
+</footer>
+</div>
+</body></html>

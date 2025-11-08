@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Job Postings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "cta-orange": "#FFA500",
+              "text-primary-light": "#212529",
+              "text-primary-dark": "#f0f2f4",
+              "text-secondary-light": "#6C757D",
+              "text-secondary-dark": "#a0a7b0",
+              "card-bg-light": "#ffffff",
+              "card-bg-dark": "#182431",
+              "chip-bg-light": "#F5F5F5",
+              "chip-bg-dark": "#2a3b4c",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden text-text-primary-light dark:text-text-primary-dark">
+<!-- TopAppBar -->
+<div class="flex items-center bg-card-bg-light dark:bg-card-bg-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="flex size-12 shrink-0 items-center">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">My Job Postings</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<img alt="User profile picture" class="h-10 w-10 object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3rWo5r_GPafCH6C0anMtZxM_j0TUqtMKQLxsb5GDyEtMjQptS3X0oRtJJi22IIdO4dVW9pg2Me3CvKuvNCTmyf9hv_wo8BkUPIY3QQobG_m-r-x3G_5gyZ7zormZQsS0v-fhXGsS0MBz_UX07w1iod3494wcxuryjC4xhRYce3Ex2KG2Yf-9yzzbVe8aCgtu43j9yHYeIsU_AUIrxSepxe9Z_-AM5Y7DSC9joOw3BHzXbbyJDD7TT23RX5rXjiKZMdTsDzYCBMws"/>
+</button>
+</div>
+</div>
+<!-- SearchBar -->
+<div class="px-4 py-3 bg-card-bg-light dark:bg-card-bg-dark">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-text-secondary-light dark:text-text-secondary-dark flex border-none bg-chip-bg-light dark:bg-chip-bg-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-0 border-none h-full placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal bg-chip-bg-light dark:bg-chip-bg-dark text-text-primary-light dark:text-text-primary-dark" placeholder="Search by title or location" value=""/>
+</div>
+</label>
+</div>
+<!-- Chips -->
+<div class="flex gap-3 px-4 py-3 overflow-x-auto bg-card-bg-light dark:bg-card-bg-dark">
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white pl-4 pr-4 cursor-pointer">
+<p class="text-sm font-medium leading-normal">Active</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-chip-bg-light dark:bg-chip-bg-dark pl-4 pr-4 cursor-pointer">
+<p class="text-sm font-medium leading-normal">Filled</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-chip-bg-light dark:bg-chip-bg-dark pl-4 pr-4 cursor-pointer">
+<p class="text-sm font-medium leading-normal">Expired</p>
+</div>
+</div>
+<div class="flex-grow p-4">
+<!-- SectionHeader -->
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-2">Active Postings</h3>
+<!-- Job Posting Card 1 -->
+<div class="py-2">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-card-bg-light dark:bg-card-bg-dark cursor-pointer">
+<div class="flex w-full grow flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex items-center justify-between">
+<p class="text-[#28A745] dark:text-[#52d973] text-sm font-bold leading-normal bg-green-500/10 rounded-full px-3 py-1">Active</p>
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">Oct 26</span>
+</div>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em]">Warehouse Loader</p>
+<div class="flex flex-col gap-1">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">Cityville, USA</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">$22/hr</p>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">group</span>
+<span class="font-bold">8 Applicants</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex min-w-[40px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary/20 text-primary text-sm font-medium leading-normal">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="flex min-w-[40px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary text-white text-sm font-medium leading-normal">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Job Posting Card 2 -->
+<div class="py-2">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-card-bg-light dark:bg-card-bg-dark cursor-pointer">
+<div class="flex w-full grow flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex items-center justify-between">
+<p class="text-orange-500 dark:text-orange-400 text-sm font-bold leading-normal bg-orange-500/10 rounded-full px-3 py-1">Needs Applicants</p>
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">Nov 5</span>
+</div>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em]">General Construction</p>
+<div class="flex flex-col gap-1">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">Metropolis, USA</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">$25/hr</p>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">group</span>
+<span class="font-bold">2/15 Applicants</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex min-w-[40px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary/20 text-primary text-sm font-medium leading-normal">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="flex min-w-[40px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary text-white text-sm font-medium leading-normal">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Example -->
+<!-- 
+            <div class="flex flex-col items-center justify-center text-center p-8 mt-8 bg-card-bg-light dark:bg-card-bg-dark rounded-xl">
+                <span class="material-symbols-outlined text-6xl text-text-secondary-light dark:text-text-secondary-dark mb-4">work_outline</span>
+                <h3 class="text-lg font-bold leading-tight tracking-[-0.015em] mb-2">You have no active jobs</h3>
+                <p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal mb-6">Post a new job to find laborers.</p>
+                <button class="flex items-center justify-center gap-2 h-12 px-6 bg-cta-orange text-white text-base font-bold leading-normal rounded-full shadow-lg">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>Post New Job</span>
+                </button>
+            </div>
+            -->
+</div>
+<!-- Floating Action Button -->
+<div class="sticky bottom-6 right-6 p-4 flex justify-end">
+<button class="flex items-center justify-center gap-2 h-14 px-6 bg-cta-orange text-white text-base font-bold leading-normal rounded-full shadow-lg hover:shadow-xl transition-shadow">
+<span class="material-symbols-outlined">add</span>
+<span>Post New Job</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Create New Job - LaborPortal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#137fec", "background-light": "#f6f7f8", "background-dark": "#101922" }, fontFamily: { display: ["Inter", "sans-serif"] }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" } } } };</script>
+    <style> body { min-height: max(884px, 100dvh); } </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display">
+    <div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+      <div class="flex items-center bg-white dark:bg-background-dark dark:border-b dark:border-slate-800 p-4 pb-2 justify-between sticky top-0 z-10">
+        <a href="./recruiter.html" class="text-slate-800 dark:text-slate-200 flex size-12 shrink-0 items-center justify-center"><span class="material-symbols-outlined">arrow_back</span></a>
+        <h2 class="text-slate-800 dark:text-slate-200 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Create New Job</h2>
+        <div class="size-12 shrink-0"></div>
+      </div>
+      <main class="flex-1 px-4 py-4 flex flex-col gap-5">
+        <div class="flex flex-col"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="job-title">Job Title</label><input id="job-title" class="form-input h-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 px-4" placeholder="e.g., Warehouse Loader" /></div>
+        <div class="flex flex-col"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="job-description">Short Description</label><textarea id="job-description" class="form-input min-h-36 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 p-4" placeholder="e.g., Loading and unloading inventory for 8 hours."></textarea></div>
+        <div class="flex w-full flex-wrap items-end gap-4">
+          <div class="flex flex-col min-w-40 flex-1"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="price-per-hour">Price per Hour (₹)</label><div class="relative"><div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><span class="text-slate-400 dark:text-slate-500">₹</span></div><input id="price-per-hour" type="number" min="0" step="1" class="form-input h-12 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 pl-8 pr-4" placeholder="250" /></div></div>
+          <div class="flex flex-col min-w-40 flex-1"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="num-laborers">Required Laborers</label><div class="flex items-center h-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50"><button id="dec" type="button" class="px-4 text-primary h-full rounded-l-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><span class="material-symbols-outlined text-xl">remove</span></button><input id="num-laborers" type="number" min="1" step="1" value="1" class="form-input w-full text-center border-0 bg-transparent text-slate-800 dark:text-slate-200 focus:outline-0 focus:ring-0 h-full p-0" /><button id="inc" type="button" class="px-4 text-primary h-full rounded-r-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><span class="material-symbols-outlined text-xl">add</span></button></div></div>
+        </div>
+        <div class="flex w-full flex-wrap items-end gap-4">
+          <div class="flex flex-col min-w-40 flex-1"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="job-location">Location</label><input id="job-location" class="form-input h-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 px-4" placeholder="e.g., Bengaluru" /></div>
+          <div class="flex flex-col min-w-40 flex-1"><label class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal pb-2" for="start-datetime">Start Date & Time</label><input id="start-datetime" type="datetime-local" class="form-input h-12 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 px-4" /></div>
+        </div>
+        <p id="error" class="text-red-600 hidden">Please fill all fields correctly.</p>
+      </main>
+      <footer class="sticky bottom-0 bg-white dark:bg-background-dark/80 backdrop-blur-sm p-4 border-t border-slate-200 dark:border-slate-800">
+        <button id="post-btn" class="flex w-full items-center justify-center rounded-xl h-14 px-5 bg-primary text-white text-base font-bold hover:bg-primary/90"><span>Post Job</span></button>
+      </footer>
+    </div>
+    <script src="./js/data.js"></script>
+    <script src="./js/storage.js"></script>
+    <script>
+      const guard = LPStorage.requireRole("recruiter");
+      if (!guard.ok) window.location.href = "./recruiter-login.html";
+      const session = LPStorage.getSession();
+      const titleEl = document.getElementById("job-title");
+      const descEl = document.getElementById("job-description");
+      const priceEl = document.getElementById("price-per-hour");
+      const numEl = document.getElementById("num-laborers");
+      const locationEl = document.getElementById("job-location");
+      const startEl = document.getElementById("start-datetime");
+      const errEl = document.getElementById("error");
+      document.getElementById("inc").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) + 1))); });
+      document.getElementById("dec").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) - 1))); });
+      document.getElementById("post-btn").addEventListener("click", () => {
+        const title = titleEl.value.trim();
+        const description = descEl.value.trim();
+        const price = Number(priceEl.value);
+        const requiredCount = Number(numEl.value);
+        const location = locationEl.value.trim();
+        const startDateTime = startEl.value ? new Date(startEl.value).toISOString() : "";
+        if (!title || !description || !(price > 0) || !(requiredCount >= 1) || !location || !startDateTime) { errEl.classList.remove("hidden"); return; }
+        errEl.classList.add("hidden");
+        LPStorage.addJob({ title, description, pricePerHour: price, requiredCount, createdBy: session.username, location, startDateTime });
+        window.location.href = "./recruiter.html";
+      });
+    </script>
+  </body>
+</html>
+
+

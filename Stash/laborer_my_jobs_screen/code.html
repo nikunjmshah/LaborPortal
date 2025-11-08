@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Jobs - Labor Management App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 bg-background-light dark:bg-background-dark shadow-sm">
+<div class="flex items-center p-4 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200">arrow_back</span>
+</div>
+<h1 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-gray-900 dark:text-gray-50">My Jobs</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 text-gray-800 dark:text-gray-200 gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0 hover:bg-gray-100 dark:hover:bg-white/10">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Tabs -->
+<nav class="sticky top-[72px] z-10 bg-background-light dark:bg-background-dark">
+<div class="border-b border-gray-200 dark:border-gray-700">
+<div class="flex px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-primary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Upcoming</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Active</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Completed</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Past</p>
+</a>
+</div>
+</div>
+</nav>
+<!-- Job Cards List -->
+<main class="flex-grow p-4 space-y-4">
+<!-- Job Card 1: Confirmed -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 @container">
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-grow">
+<p class="text-[13px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">CONFIRMED</p>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white mt-1">General Construction Laborer</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="text-lg font-bold text-primary">$25/hr</p>
+</div>
+</div>
+<div class="mt-3 text-gray-600 dark:text-gray-300 space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">business_center</span>
+<p class="text-sm font-normal leading-normal">BuildCo Inc.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">123 Main St.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+<p class="text-sm font-normal leading-normal">Mon, Oct 28</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">schedule</span>
+<p class="text-sm font-normal leading-normal">8:00 AM - 4:00 PM</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Job Card 2: Upcoming -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 @container">
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-grow">
+<p class="text-[13px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">UPCOMING</p>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white mt-1">Warehouse Stocking</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="text-lg font-bold text-primary">$18/hr</p>
+</div>
+</div>
+<div class="mt-3 text-gray-600 dark:text-gray-300 space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">business_center</span>
+<p class="text-sm font-normal leading-normal">Logistics Pro</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">456 Industrial Way</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+<p class="text-sm font-normal leading-normal">Tue, Oct 29</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">schedule</span>
+<p class="text-sm font-normal leading-normal">9:00 AM - 5:00 PM</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Job Card 3: Pending -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 @container">
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-grow">
+<p class="text-[13px] font-semibold uppercase tracking-wider text-orange-500 dark:text-orange-400">PENDING</p>
+<p class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white mt-1">Event Setup Crew</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="text-lg font-bold text-primary">$22/hr</p>
+</div>
+</div>
+<div class="mt-3 text-gray-600 dark:text-gray-300 space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">business_center</span>
+<p class="text-sm font-normal leading-normal">Staging Solutions</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">789 Park Ave</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+<p class="text-sm font-normal leading-normal">Wed, Oct 30</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">schedule</span>
+<p class="text-sm font-normal leading-normal">1:00 PM - 9:00 PM</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State View -->
+<div class="text-center py-16 px-6">
+<span class="material-symbols-outlined text-6xl text-gray-400 dark:text-gray-500">work_history</span>
+<h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No More Jobs Here</h3>
+<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You've reached the end of your upcoming jobs list.</p>
+<button class="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-base font-bold text-white shadow-lg transition hover:bg-primary/90">
+<span class="material-symbols-outlined">search</span>
+          Find New Jobs
+        </button>
+</div>
+</main>
+</div>
+</body></html>
