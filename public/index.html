@@ -71,145 +71,151 @@
         </div>
       </div>
     </div>
-    <script src="./js/data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.2"></script>
+    <script src="./js/supabaseClient.js"></script>
     <script src="./js/storage.js"></script>
     <script>
-      LPStorage.ensureSeedData();
-      const jobsEl = document.getElementById("jobs");
-      const searchEl = document.getElementById("search");
-      const sortEl = document.getElementById("sort");
-      let pendingJobId = null;
-      function getLaborSession() {
-        const s = LPStorage.getSession();
-        if (s && s.role === "laborer" && s.contact) return s;
-        return null;
-      }
-      function refreshUserChip() {
-        const s = getLaborSession();
-        const chip = document.getElementById("user-chip");
-        const nameEl = document.getElementById("user-name");
-        const logoutBtn = document.getElementById("logout-btn");
-        if (s) {
-          nameEl.textContent = s.name;
-          chip.classList.remove("hidden");
-          document.getElementById("recruiter-bar").classList.add("hidden");
-          logoutBtn.classList.remove("hidden");
-        } else {
-          chip.classList.add("hidden");
-          nameEl.textContent = "";
-          document.getElementById("recruiter-bar").classList.remove("hidden");
-          logoutBtn.classList.add("hidden");
+      (async function init() {
+        await LPStorage.ensureSeedData();
+        const jobsEl = document.getElementById("jobs");
+        const searchEl = document.getElementById("search");
+        const sortEl = document.getElementById("sort");
+        let pendingJobId = null;
+
+        function getLaborSession() {
+          const s = LPStorage.getSession();
+          return s && s.role === "laborer" && s.contact ? s : null;
         }
-      }
-      function renderList(filterText) {
-        jobsEl.innerHTML = "";
-        const allOpen = LPStorage.getOpenJobs();
-        let jobs = filterText ? allOpen.filter(j => (j.title + " " + j.description).toLowerCase().includes(filterText.toLowerCase())) : allOpen;
-        const session = getLaborSession();
-        if (session) {
-          jobs = jobs.filter(j => !j.applicants.some(a => (a.contact && a.contact === session.contact) || (a.user && a.user === session.username)));
+        function refreshUserChip() {
+          const s = getLaborSession();
+          const chip = document.getElementById("user-chip");
+          const nameEl = document.getElementById("user-name");
+          const logoutBtn = document.getElementById("logout-btn");
+          if (s) {
+            nameEl.textContent = s.name;
+            chip.classList.remove("hidden");
+            document.getElementById("recruiter-bar").classList.add("hidden");
+            logoutBtn.classList.remove("hidden");
+          } else {
+            chip.classList.add("hidden");
+            nameEl.textContent = "";
+            document.getElementById("recruiter-bar").classList.remove("hidden");
+            logoutBtn.classList.add("hidden");
+          }
         }
-        const sort = sortEl.value;
-        jobs = jobs.slice().sort((a, b) => {
-          if (sort === "priceAsc") return (a.pricePerHour || 0) - (b.pricePerHour || 0);
-          if (sort === "priceDesc") return (b.pricePerHour || 0) - (a.pricePerHour || 0);
-          const da = a.startDateTime ? Date.parse(a.startDateTime) : Date.parse(a.createdAt || 0);
-          const db = b.startDateTime ? Date.parse(b.startDateTime) : Date.parse(b.createdAt || 0);
-          if (sort === "dateAsc") return da - db;
-          if (sort === "dateDesc") return db - da;
-          return 0;
-        });
-        if (jobs.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "text-center py-16 px-6 text-gray-500";
-          empty.textContent = "No jobs found.";
-          jobsEl.appendChild(empty);
-          return;
-        }
-        jobs.forEach(job => {
-          const hired = job.applicants.length;
-          const card = document.createElement("div");
-          card.className = "flex flex-col rounded-xl bg-white dark:bg-slate-800 shadow";
-          card.innerHTML = `
-            <div class="p-4 flex flex-col gap-2">
-              <p class="text-lg font-bold text-slate-900 dark:text-white">${job.title}</p>
-              <p class="text-slate-600 dark:text-slate-300">${job.description}</p>
-              <div class="text-sm text-slate-600 dark:text-slate-300 flex flex-wrap gap-4">
-                ${job.location ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">location_on</span>${job.location}</span>` : ``}
-                ${job.startDateTime ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">calendar_month</span>${new Date(job.startDateTime).toLocaleString()}</span>` : ``}
-              </div>
-              <div class="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-300 pt-1">
-                <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">payments</span><span>₹${job.pricePerHour} / hour</span></div>
-                <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">groups</span><span>${hired} of ${job.requiredCount} hired</span></div>
-              </div>
-            </div>
-            <div class="border-t border-slate-200 dark:border-slate-700 p-4">
-              <button data-id="${job.id}" class="apply-btn flex w-full items-center justify-center rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-medium"><span class="truncate">Sign Up</span></button>
-            </div>
-          `;
-          jobsEl.appendChild(card);
-        });
-        jobsEl.querySelectorAll(".apply-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            pendingJobId = btn.getAttribute("data-id");
-            const labor = getLaborSession();
-            if (labor) {
-              const res = LPStorage.applyToJobWithDetails(pendingJobId, { name: labor.name, contact: labor.contact, passkey: "1234" });
-              if (!res.ok) { alert(res.error || "Could not sign up."); return; }
-              renderList(searchEl.value);
-              alert("Successfully signed up!");
-            } else {
-              openApplyModal();
-            }
+
+        async function renderList(filterText) {
+          jobsEl.innerHTML = "";
+          const allOpen = await LPStorage.getOpenJobs();
+          let jobs = filterText ? allOpen.filter(j => (j.title + " " + j.description).toLowerCase().includes(filterText.toLowerCase())) : allOpen;
+          const session = getLaborSession();
+          if (session) {
+            jobs = jobs.filter(j => !j.applicants.some(a => (a.contact && a.contact === session.contact) || (a.user && a.user === session.username)));
+          }
+          const sort = sortEl.value;
+          jobs = jobs.slice().sort((a, b) => {
+            if (sort === "priceAsc") return (a.pricePerHour || 0) - (b.pricePerHour || 0);
+            if (sort === "priceDesc") return (b.pricePerHour || 0) - (a.pricePerHour || 0);
+            const da = a.startDateTime ? Date.parse(a.startDateTime) : Date.parse(a.createdAt || 0);
+            const db = b.startDateTime ? Date.parse(b.startDateTime) : Date.parse(b.createdAt || 0);
+            if (sort === "dateAsc") return da - db;
+            if (sort === "dateDesc") return db - da;
+            return 0;
           });
-        });
-      }
-      function openApplyModal() {
-        document.getElementById("app-name").value = "";
-        document.getElementById("app-contact").value = "";
-        document.getElementById("app-passkey").value = "";
-        document.getElementById("app-error").classList.add("hidden");
-        document.getElementById("apply-modal").classList.remove("hidden");
-      }
-      function closeApplyModal() { document.getElementById("apply-modal").classList.add("hidden"); }
-      document.getElementById("app-contact").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\\D+/g, "").slice(0, 10); });
-      document.getElementById("app-cancel").addEventListener("click", closeApplyModal);
-      document.getElementById("app-submit").addEventListener("click", () => {
-        const name = document.getElementById("app-name").value.trim();
-        const contact = document.getElementById("app-contact").value.trim();
-        const passkey = document.getElementById("app-passkey").value;
-        const err = document.getElementById("app-error");
-        if (!name || !contact || !passkey) { err.textContent = "Please fill all fields."; err.classList.remove("hidden"); return; }
-        const loginRes = LPStorage.loginLabor(name, contact, passkey);
-        if (!loginRes.ok) { err.textContent = loginRes.error || "Login failed."; err.classList.remove("hidden"); return; }
-        if (pendingJobId) {
-          const res = LPStorage.applyToJobWithDetails(pendingJobId, { name, contact, passkey });
-          if (!res.ok) { err.textContent = res.error || "Could not sign up."; err.classList.remove("hidden"); return; }
-          closeApplyModal();
-          renderList(searchEl.value);
-          alert("Successfully signed up!");
-        } else {
-          closeApplyModal();
-          window.location.href = "./my-jobs.html";
+          if (jobs.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "text-center py-16 px-6 text-gray-500";
+            empty.textContent = "No jobs found.";
+            jobsEl.appendChild(empty);
+            return;
+          }
+          jobs.forEach(job => {
+            const hired = job.applicants.length;
+            const card = document.createElement("div");
+            card.className = "flex flex-col rounded-xl bg-white dark:bg-slate-800 shadow";
+            card.innerHTML = `
+              <div class="p-4 flex flex-col gap-2">
+                <p class="text-lg font-bold text-slate-900 dark:text-white">${job.title}</p>
+                <p class="text-slate-600 dark:text-slate-300">${job.description}</p>
+                <div class="text-sm text-slate-600 dark:text-slate-300 flex flex-wrap gap-4">
+                  ${job.location ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">location_on</span>${job.location}</span>` : ``}
+                  ${job.startDateTime ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">calendar_month</span>${new Date(job.startDateTime).toLocaleString()}</span>` : ``}
+                </div>
+                <div class="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-300 pt-1">
+                  <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">payments</span><span>₹${job.pricePerHour} / hour</span></div>
+                  <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-lg">groups</span><span>${hired} of ${job.requiredCount} hired</span></div>
+                </div>
+              </div>
+              <div class="border-t border-slate-200 dark:border-slate-700 p-4">
+                <button data-id="${job.id}" class="apply-btn flex w-full items-center justify-center rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-medium"><span class="truncate">Sign Up</span></button>
+              </div>
+            `;
+            jobsEl.appendChild(card);
+          });
+          jobsEl.querySelectorAll(".apply-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              pendingJobId = btn.getAttribute("data-id");
+              const labor = getLaborSession();
+              if (labor) {
+                const res = await LPStorage.applyToJobWithDetails(pendingJobId, { name: labor.name, contact: labor.contact, passkey: "1234" });
+                if (!res.ok) { alert(res.error || "Could not sign up."); return; }
+                await renderList(searchEl.value);
+                alert("Successfully signed up!");
+              } else {
+                openApplyModal();
+              }
+            });
+          });
         }
+
+        function openApplyModal() {
+          document.getElementById("app-name").value = "";
+          document.getElementById("app-contact").value = "";
+          document.getElementById("app-passkey").value = "";
+          document.getElementById("app-error").classList.add("hidden");
+          document.getElementById("apply-modal").classList.remove("hidden");
+        }
+        function closeApplyModal() { document.getElementById("apply-modal").classList.add("hidden"); }
+        document.getElementById("app-contact").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\\D+/g, "").slice(0, 10); });
+        document.getElementById("app-cancel").addEventListener("click", closeApplyModal);
+        document.getElementById("app-submit").addEventListener("click", async () => {
+          const name = document.getElementById("app-name").value.trim();
+          const contact = document.getElementById("app-contact").value.trim();
+          const passkey = document.getElementById("app-passkey").value;
+          const err = document.getElementById("app-error");
+          if (!name || !contact || !passkey) { err.textContent = "Please fill all fields."; err.classList.remove("hidden"); return; }
+          const loginRes = await LPStorage.loginLabor(name, contact, passkey);
+          if (!loginRes.ok) { err.textContent = loginRes.error || "Login failed."; err.classList.remove("hidden"); return; }
+          if (pendingJobId) {
+            const res = await LPStorage.applyToJobWithDetails(pendingJobId, { name, contact, passkey });
+            if (!res.ok) { err.textContent = res.error || "Could not sign up."; err.classList.remove("hidden"); return; }
+            closeApplyModal();
+            await renderList(searchEl.value);
+            alert("Successfully signed up!");
+          } else {
+            closeApplyModal();
+            window.location.href = "./my-jobs.html";
+          }
+          refreshUserChip();
+        });
+
+        searchEl.addEventListener("input", (e) => renderList(e.target.value));
+        sortEl.addEventListener("change", () => renderList(searchEl.value));
+        await renderList("");
+
+        document.getElementById("my-jobs-btn").addEventListener("click", () => {
+          const labor = getLaborSession();
+          if (labor) { window.location.href = "./my-jobs.html"; }
+          else { pendingJobId = null; openApplyModal(); }
+        });
+        document.getElementById("logout-btn").addEventListener("click", async () => {
+          LPStorage.logout();
+          refreshUserChip();
+          await renderList(searchEl.value);
+        });
         refreshUserChip();
-      });
-      searchEl.addEventListener("input", (e) => renderList(e.target.value));
-      sortEl.addEventListener("change", () => renderList(searchEl.value));
-      renderList("");
-      document.getElementById("my-jobs-btn").addEventListener("click", () => {
-        const labor = getLaborSession();
-        if (labor) { window.location.href = "./my-jobs.html"; }
-        else { pendingJobId = null; openApplyModal(); }
-      });
-      document.getElementById("logout-btn").addEventListener("click", () => {
-        LPStorage.logout();
-        refreshUserChip();
-        renderList(searchEl.value);
-      });
-      refreshUserChip();
+      })();
     </script>
   </body>
 </html>
-
 

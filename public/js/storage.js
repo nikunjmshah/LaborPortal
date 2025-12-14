@@ -1,9 +1,11 @@
-/* Storage and data layer for LaborPortal (public build) */
+/* Supabase-backed storage layer for LaborPortal */
 (function () {
-  const JOBS_KEY = "lp_jobs";
   const SESSION_KEY = "lp_session";
-  const RECRUITER_EMAIL_KEY = "lp_recruiter_email";
-  const RECRUITER_PASS_HASH_KEY = "lp_recruiter_pass_hash";
+  if (!window.supabaseClient) {
+    console.error("Supabase client missing. Load supabase-js CDN and supabaseClient.js first.");
+    return;
+  }
+  const sb = window.supabaseClient;
 
   function readJson(key, fallback) {
     try {
@@ -17,40 +19,6 @@
   function writeJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
   }
-  function generateId() {
-    return "job_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-  }
-  function normalizeApplicants(arr) {
-    return (arr || []).map(a => {
-      if (typeof a === "string") {
-        return { id: generateId(), name: a, user: a, contact: "", appliedAt: new Date().toISOString() };
-      }
-      if (a && typeof a === "object") {
-        return {
-          id: a.id || generateId(),
-          name: a.name || a.user || "Unknown",
-          user: a.user || "",
-          contact: a.contact || "",
-          appliedAt: a.appliedAt || new Date().toISOString()
-        };
-      }
-      return { id: generateId(), name: "Unknown", user: "", contact: "", appliedAt: new Date().toISOString() };
-    });
-  }
-  function ensureSeedData() {
-    const existingJobs = readJson(JOBS_KEY, null);
-    if (!existingJobs) {
-      writeJson(JOBS_KEY, [
-        { id: generateId(), title: "Warehouse Loader", description: "Assist with loading/unloading inventory. Lift up to 50 lbs.", pricePerHour: 220, requiredCount: 5, createdBy: "recruiter@demo.com", applicants: [], createdAt: new Date().toISOString(), location: "Mumbai", startDateTime: new Date(Date.now() + 86400000).toISOString() },
-        { id: generateId(), title: "General Construction", description: "Site cleanup and material handling. Safety gear provided.", pricePerHour: 250, requiredCount: 10, createdBy: "recruiter@demo.com", applicants: [], createdAt: new Date().toISOString(), location: "Pune", startDateTime: new Date(Date.now() + 172800000).toISOString() }
-      ]);
-    }
-    if (window.LPData && typeof LPData.getLaborerRegistry === "function") {
-      LPData.getLaborerRegistry(); // ensures it exists
-    }
-  }
-  function getJobs() { return readJson(JOBS_KEY, []); }
-  function setJobs(jobs) { writeJson(JOBS_KEY, jobs); }
   function getSession() { return readJson(SESSION_KEY, null); }
   function setSession(session) { writeJson(SESSION_KEY, session); }
   function clearSession() { localStorage.removeItem(SESSION_KEY); }
@@ -62,28 +30,7 @@
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
   }
-  async function verifyOrSetupRecruiter(email, password) {
-    ensureSeedData();
-    const storedHash = localStorage.getItem(RECRUITER_PASS_HASH_KEY);
-    const storedEmail = localStorage.getItem(RECRUITER_EMAIL_KEY);
-    const passHash = await sha256(password);
-    if (!storedHash) {
-      localStorage.setItem(RECRUITER_EMAIL_KEY, String(email || "").trim());
-      localStorage.setItem(RECRUITER_PASS_HASH_KEY, passHash);
-      const session = { username: String(email || "recruiter").trim(), role: "recruiter", name: "Recruiter" };
-      setSession(session);
-      return { ok: true, session, setup: true };
-    }
-    if (storedEmail && String(email || "").trim() !== storedEmail) {
-      return { ok: false, error: "Email does not match configured recruiter" };
-    }
-    if (storedHash !== passHash) {
-      return { ok: false, error: "Invalid password" };
-    }
-    const session = { username: storedEmail || "recruiter", role: "recruiter", name: "Recruiter" };
-    setSession(session);
-    return { ok: true, session };
-  }
+
   function requireRole(expectedRole) {
     const session = getSession();
     if (!session) return { ok: false, reason: "no_session" };
@@ -92,74 +39,140 @@
   }
   function logout() { clearSession(); }
 
-  function loginLabor(name, contact, passkey) {
-    ensureSeedData();
+  async function ensureSeedData() {
+    // no-op: Supabase holds data; seeds can be added manually if desired
+    return;
+  }
+
+  async function verifyOrSetupRecruiter(email, password) {
+    await ensureSeedData();
+    const passHash = await sha256(password);
+    const { data: rows, error } = await sb.from("recruiter_auth").select("*").limit(1);
+    if (error) return { ok: false, error: error.message };
+    if (!rows || rows.length === 0) {
+      const ins = await sb.from("recruiter_auth").insert({ email: email || "recruiter", password_hash: passHash }).select().single();
+      if (ins.error) return { ok: false, error: ins.error.message };
+      const session = { username: email || "recruiter", role: "recruiter", name: "Recruiter" };
+      setSession(session);
+      return { ok: true, session, setup: true };
+    }
+    const rec = rows[0];
+    if (rec.email && email && rec.email !== email) return { ok: false, error: "Email does not match configured recruiter" };
+    if (rec.password_hash !== passHash) return { ok: false, error: "Invalid password" };
+    const session = { username: rec.email || "recruiter", role: "recruiter", name: "Recruiter" };
+    setSession(session);
+    return { ok: true, session };
+  }
+
+  async function loginLabor(name, contact, passkey) {
+    await ensureSeedData();
     if (!name || !contact) return { ok: false, error: "Missing name or contact" };
     if ((passkey || "") !== "1234") return { ok: false, error: "Invalid passkey" };
     if (!/^\d{10}$/.test(String(contact).trim())) return { ok: false, error: "Contact must be 10 digits" };
-    const reg = window.LPData ? LPData.getLaborerRegistry() : {};
     const c = String(contact).trim();
-    const existing = reg[c];
-    if (existing && existing.name && existing.name !== String(name).trim()) {
-      return { ok: false, error: "Contact already registered with a different name" };
-    }
-    reg[c] = existing || { name: String(name).trim(), contact: c, createdAt: new Date().toISOString() };
-    if (window.LPData) LPData.setLaborerRegistry(reg);
+    const { error } = await sb.from("laborers").upsert({ contact: c, name: String(name).trim() });
+    if (error) return { ok: false, error: error.message };
     const session = { username: c, role: "laborer", name: String(name).trim(), contact: c };
     setSession(session);
     return { ok: true, session };
   }
 
-  function addJob({ title, description, pricePerHour, requiredCount, createdBy, location, startDateTime }) {
-    const jobs = getJobs();
-    const job = { id: generateId(), title: title.trim(), description: description.trim(), pricePerHour: Number(pricePerHour), requiredCount: Number(requiredCount), createdBy, applicants: [], createdAt: new Date().toISOString(), location: (location || "").trim(), startDateTime: startDateTime || "" };
-    jobs.unshift(job);
-    setJobs(jobs);
-    return job;
+  function normalizeJob(row) {
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      pricePerHour: row.price_per_hour,
+      requiredCount: row.required_count,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      location: row.location,
+      startDateTime: row.start_datetime,
+      applicants: (row.applicants || []).map(a => ({
+        id: a.id,
+        name: a.name,
+        contact: a.contact,
+        appliedAt: a.created_at
+      }))
+    };
   }
-  function deleteJob(id, byUser) {
-    const jobs = getJobs();
-    const idx = jobs.findIndex(j => j.id === id);
-    if (idx === -1) return false;
-    if (jobs[idx].createdBy !== byUser) return false;
-    jobs.splice(idx, 1);
-    setJobs(jobs);
-    return true;
+
+  async function getJobsWithApplicants(filter) {
+    let query = sb.from("jobs").select("*, applicants(*)").order("created_at", { ascending: false });
+    if (filter?.byRecruiter) query = query.eq("created_by", filter.byRecruiter);
+    const { data, error } = await query;
+    if (error) return { ok: false, error: error.message, jobs: [] };
+    return { ok: true, jobs: (data || []).map(normalizeJob) };
   }
-  function applyToJobWithDetails(jobId, applicant) {
-    const jobs = getJobs();
-    const job = jobs.find(j => j.id === jobId);
-    if (!job) return { ok: false, error: "Job not found" };
+
+  async function addJob({ title, description, pricePerHour, requiredCount, createdBy, location, startDateTime }) {
+    const { data, error } = await sb.from("jobs").insert({
+      title: title.trim(),
+      description: description.trim(),
+      price_per_hour: Number(pricePerHour),
+      required_count: Number(requiredCount),
+      created_by: createdBy,
+      location: (location || "").trim(),
+      start_datetime: startDateTime || null
+    }).select().single();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, job: normalizeJob(data) };
+  }
+
+  async function deleteJob(id, byUser) {
+    const { data: job, error: errJob } = await sb.from("jobs").select("id, created_by").eq("id", id).single();
+    if (errJob || !job) return false;
+    if (job.created_by !== byUser) return false;
+    const { error } = await sb.from("jobs").delete().eq("id", id);
+    return !error;
+  }
+
+  async function applyToJobWithDetails(jobId, applicant) {
     if (!applicant || !applicant.name || !applicant.contact) return { ok: false, error: "Missing required details" };
     if (!/^\d{10}$/.test(String(applicant.contact).trim())) return { ok: false, error: "Contact must be 10 digits" };
     if ((applicant.passkey || "") !== "1234") return { ok: false, error: "Invalid passkey" };
-    job.applicants = normalizeApplicants(job.applicants);
-    if (job.applicants.length >= job.requiredCount) return { ok: false, error: "Job filled" };
-    if (job.applicants.some(a => a.contact && a.contact === applicant.contact)) return { ok: false, error: "You already signed up" };
-    job.applicants.push({ id: generateId(), name: applicant.name.trim(), user: "", contact: applicant.contact.trim(), appliedAt: new Date().toISOString() });
-    setJobs(jobs);
-    return { ok: true, job };
+    const { data: job, error } = await sb.from("jobs")
+      .select("id, required_count, applicants(contact)")
+      .eq("id", jobId)
+      .single();
+    if (error || !job) return { ok: false, error: "Job not found" };
+    if ((job.applicants || []).some(a => a.contact === applicant.contact)) return { ok: false, error: "You already signed up" };
+    if ((job.applicants || []).length >= job.required_count) return { ok: false, error: "Job filled" };
+    const ins = await sb.from("applicants").insert({
+      job_id: jobId,
+      name: applicant.name.trim(),
+      contact: applicant.contact.trim()
+    });
+    if (ins.error) return { ok: false, error: ins.error.message };
+    return { ok: true };
   }
-  function unapplyFromJobByContact(jobId, contact) {
-    const jobs = getJobs();
-    const job = jobs.find(j => j.id === jobId);
-    if (!job) return { ok: false, error: "Job not found" };
-    job.applicants = normalizeApplicants(job.applicants).filter(a => a.contact !== String(contact).trim());
-    setJobs(jobs);
-    return { ok: true, job };
+
+  async function unapplyFromJobByContact(jobId, contact) {
+    const { error } = await sb.from("applicants").delete().eq("job_id", jobId).eq("contact", String(contact).trim());
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
   }
-  function getJobsForRecruiter(username) {
-    return getJobs().map(j => ({ ...j, applicants: normalizeApplicants(j.applicants) })).filter(j => j.createdBy === username);
+
+  async function getJobsForRecruiter(username) {
+    const res = await getJobsWithApplicants({ byRecruiter: username });
+    if (!res.ok) return [];
+    return res.jobs;
   }
-  function getOpenJobs() {
-    return getJobs().map(j => ({ ...j, applicants: normalizeApplicants(j.applicants) })).filter(j => j.applicants.length < j.requiredCount);
+
+  async function getOpenJobs() {
+    const res = await getJobsWithApplicants();
+    if (!res.ok) return [];
+    return res.jobs.filter(j => j.applicants.length < j.requiredCount);
   }
-  function getJobsForLaborer(username) {
-    return getJobs().map(j => ({ ...j, applicants: normalizeApplicants(j.applicants) })).filter(j => j.applicants.some(a => a.user === username || a.contact === username));
+
+  async function getJobsForLaborer(username) {
+    const res = await getJobsWithApplicants();
+    if (!res.ok) return [];
+    return res.jobs.filter(j => j.applicants.some(a => a.contact === username || a.user === username));
   }
+
   window.LPStorage = {
     ensureSeedData,
-    getJobs, setJobs,
     getSession, setSession, clearSession,
     loginLabor, logout, requireRole,
     verifyOrSetupRecruiter,

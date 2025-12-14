@@ -34,33 +34,37 @@
         <button id="post-btn" class="flex w-full items-center justify-center rounded-xl h-14 px-5 bg-primary text-white text-base font-bold hover:bg-primary/90"><span>Post Job</span></button>
       </footer>
     </div>
-    <script src="./js/data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.2"></script>
+    <script src="./js/supabaseClient.js"></script>
     <script src="./js/storage.js"></script>
     <script>
-      const guard = LPStorage.requireRole("recruiter");
-      if (!guard.ok) window.location.href = "./recruiter-login.html";
-      const session = LPStorage.getSession();
-      const titleEl = document.getElementById("job-title");
-      const descEl = document.getElementById("job-description");
-      const priceEl = document.getElementById("price-per-hour");
-      const numEl = document.getElementById("num-laborers");
-      const locationEl = document.getElementById("job-location");
-      const startEl = document.getElementById("start-datetime");
-      const errEl = document.getElementById("error");
-      document.getElementById("inc").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) + 1))); });
-      document.getElementById("dec").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) - 1))); });
-      document.getElementById("post-btn").addEventListener("click", () => {
-        const title = titleEl.value.trim();
-        const description = descEl.value.trim();
-        const price = Number(priceEl.value);
-        const requiredCount = Number(numEl.value);
-        const location = locationEl.value.trim();
-        const startDateTime = startEl.value ? new Date(startEl.value).toISOString() : "";
-        if (!title || !description || !(price > 0) || !(requiredCount >= 1) || !location || !startDateTime) { errEl.classList.remove("hidden"); return; }
-        errEl.classList.add("hidden");
-        LPStorage.addJob({ title, description, pricePerHour: price, requiredCount, createdBy: session.username, location, startDateTime });
-        window.location.href = "./recruiter.html";
-      });
+      (function init() {
+        const guard = LPStorage.requireRole("recruiter");
+        if (!guard.ok) { window.location.href = "./recruiter-login.html"; return; }
+        const session = LPStorage.getSession();
+        const titleEl = document.getElementById("job-title");
+        const descEl = document.getElementById("job-description");
+        const priceEl = document.getElementById("price-per-hour");
+        const numEl = document.getElementById("num-laborers");
+        const locationEl = document.getElementById("job-location");
+        const startEl = document.getElementById("start-datetime");
+        const errEl = document.getElementById("error");
+        document.getElementById("inc").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) + 1))); });
+        document.getElementById("dec").addEventListener("click", () => { numEl.value = String(Math.max(1, (parseInt(numEl.value || "1", 10) - 1))); });
+        document.getElementById("post-btn").addEventListener("click", async () => {
+          const title = titleEl.value.trim();
+          const description = descEl.value.trim();
+          const price = Number(priceEl.value);
+          const requiredCount = Number(numEl.value);
+          const location = locationEl.value.trim();
+          const startDateTime = startEl.value ? new Date(startEl.value).toISOString() : "";
+          if (!title || !description || !(price > 0) || !(requiredCount >= 1) || !location || !startDateTime) { errEl.classList.remove("hidden"); return; }
+          errEl.classList.add("hidden");
+          const res = await LPStorage.addJob({ title, description, pricePerHour: price, requiredCount, createdBy: session.username, location, startDateTime });
+          if (!res.ok) { errEl.textContent = res.error || "Could not post job."; errEl.classList.remove("hidden"); return; }
+          window.location.href = "./recruiter.html";
+        });
+      })();
     </script>
   </body>
 </html>

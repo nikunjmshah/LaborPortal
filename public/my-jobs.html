@@ -24,67 +24,70 @@
       </header>
       <main id="jobs" class="flex-grow p-4 space-y-4"></main>
     </div>
-    <script src="./js/data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.2"></script>
+    <script src="./js/supabaseClient.js"></script>
     <script src="./js/storage.js"></script>
     <script>
-      const guard = LPStorage.requireRole("laborer");
-      if (!guard.ok) window.location.href = "./index.html";
-      const session = LPStorage.getSession();
-      function refreshUserChip() {
-        const chip = document.getElementById("user-chip");
-        const nameEl = document.getElementById("user-name");
-        if (session && session.name) { nameEl.textContent = session.name; chip.classList.remove("hidden"); }
-      }
-      document.getElementById("logout-btn").addEventListener("click", () => { LPStorage.logout(); window.location.href = "./index.html"; });
-      function render() {
-        const container = document.getElementById("jobs");
-        container.innerHTML = "";
-        const jobs = LPStorage.getJobsForLaborer(session.username);
-        if (jobs.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "text-center py-16 px-6 text-gray-500";
-          empty.innerHTML = `<span class="material-symbols-outlined text-6xl text-gray-400 mb-4">work_history</span><h3 class="text-lg font-semibold">No Jobs Yet</h3><p class="text-sm">Browse available jobs to sign up.</p><a href="./index.html" class="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-primary/90"><span class="material-symbols-outlined">search</span><span>Find New Jobs</span></a>`;
-          container.appendChild(empty);
-          return;
+      (async function init() {
+        const guard = LPStorage.requireRole("laborer");
+        if (!guard.ok) { window.location.href = "./index.html"; return; }
+        const session = LPStorage.getSession();
+        function refreshUserChip() {
+          const chip = document.getElementById("user-chip");
+          const nameEl = document.getElementById("user-name");
+          if (session && session.name) { nameEl.textContent = session.name; chip.classList.remove("hidden"); }
         }
-        jobs.forEach(job => {
-          const card = document.createElement("div");
-          card.className = "bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden";
-          card.innerHTML = `
-            <div class="p-4">
-              <div class="flex justify-between items-start gap-4">
-                <div class="flex-grow">
-                  <p class="text-lg font-bold text-gray-900 dark:text-white">${job.title}</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${job.description}</p>
-                  <div class="text-xs text-gray-600 dark:text-gray-300 flex flex-wrap gap-3 mt-2">
-                    ${job.location ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">location_on</span>${job.location}</span>` : ``}
-                    ${job.startDateTime ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">calendar_month</span>${new Date(job.startDateTime).toLocaleString()}</span>` : ``}
+        document.getElementById("logout-btn").addEventListener("click", () => { LPStorage.logout(); window.location.href = "./index.html"; });
+        async function render() {
+          const container = document.getElementById("jobs");
+          container.innerHTML = "";
+          const jobs = await LPStorage.getJobsForLaborer(session.username);
+          if (!jobs || jobs.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "text-center py-16 px-6 text-gray-500";
+            empty.innerHTML = `<span class="material-symbols-outlined text-6xl text-gray-400 mb-4">work_history</span><h3 class="text-lg font-semibold">No Jobs Yet</h3><p class="text-sm">Browse available jobs to sign up.</p><a href="./index.html" class="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-primary/90"><span class="material-symbols-outlined">search</span><span>Find New Jobs</span></a>`;
+            container.appendChild(empty);
+            return;
+          }
+          jobs.forEach(job => {
+            const card = document.createElement("div");
+            card.className = "bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden";
+            card.innerHTML = `
+              <div class="p-4">
+                <div class="flex justify-between items-start gap-4">
+                  <div class="flex-grow">
+                    <p class="text-lg font-bold text-gray-900 dark:text-white">${job.title}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${job.description}</p>
+                    <div class="text-xs text-gray-600 dark:text-gray-300 flex flex-wrap gap-3 mt-2">
+                      ${job.location ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">location_on</span>${job.location}</span>` : ``}
+                      ${job.startDateTime ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">calendar_month</span>${new Date(job.startDateTime).toLocaleString()}</span>` : ``}
+                    </div>
                   </div>
+                  <div class="text-right flex-shrink-0"><p class="text-lg font-bold text-primary">₹${job.pricePerHour}/hr</p></div>
                 </div>
-                <div class="text-right flex-shrink-0"><p class="text-lg font-bold text-primary">₹${job.pricePerHour}/hr</p></div>
+                <div class="mt-3 flex items-center gap-3 text-gray-600 dark:text-gray-300 text-sm">
+                  <div class="flex items-center gap-1"><span class="material-symbols-outlined text-base">groups</span><span>${job.applicants.length} / ${job.requiredCount} filled</span></div>
+                </div>
               </div>
-              <div class="mt-3 flex items-center gap-3 text-gray-600 dark:text-gray-300 text-sm">
-                <div class="flex items-center gap-1"><span class="material-symbols-outlined text-base">groups</span><span>${job.applicants.length} / ${job.requiredCount} filled</span></div>
+              <div class="border-t border-slate-200 dark:border-slate-700 p-3">
+                <button data-id="${job.id}" class="unsign-btn inline-flex items-center justify-center rounded-lg h-10 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium">Unsign</button>
               </div>
-            </div>
-            <div class="border-t border-slate-200 dark:border-slate-700 p-3">
-              <button data-id="${job.id}" class="unsign-btn inline-flex items-center justify-center rounded-lg h-10 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium">Unsign</button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-        container.querySelectorAll(".unsign-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-id");
-            if (!confirm("Remove your signup from this job?")) return;
-            const res = LPStorage.unapplyFromJobByContact(id, session.contact || session.username);
-            if (!res.ok) { alert(res.error || "Could not unsign."); return; }
-            render();
+            `;
+            container.appendChild(card);
           });
-        });
-      }
-      refreshUserChip();
-      render();
+          container.querySelectorAll(".unsign-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              const id = btn.getAttribute("data-id");
+              if (!confirm("Remove your signup from this job?")) return;
+              const res = await LPStorage.unapplyFromJobByContact(id, session.contact || session.username);
+              if (!res.ok) { alert(res.error || "Could not unsign."); return; }
+              await render();
+            });
+          });
+        }
+        refreshUserChip();
+        await render();
+      })();
     </script>
   </body>
 </html>
