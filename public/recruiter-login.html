@@ -40,14 +40,8 @@
         const err = document.getElementById("login-error");
         err.classList.add("hidden");
         try {
-          const res = await LPStorage.verifyOrSetupRecruiter(email, password);
+          const res = await LPStorage.verifyOrSetupRecruiter(email, password, isSignup);
           if (!res.ok) { err.textContent = res.error || "Invalid credentials"; err.classList.remove("hidden"); return; }
-          if (isSignup && !res.setup && res.session) {
-            // already exists
-            err.textContent = "Account exists. Sign in instead.";
-            err.classList.remove("hidden");
-            return;
-          }
           window.location.href = "./recruiter.html";
         } catch (e) {
           err.textContent = "Unexpected error";

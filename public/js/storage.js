@@ -44,22 +44,23 @@
     return;
   }
 
-  async function verifyOrSetupRecruiter(email, password) {
+  async function verifyOrSetupRecruiter(email, password, createIfMissing = false) {
     await ensureSeedData();
+    if (!email || !password) return { ok: false, error: "Email and password required" };
     const passHash = await sha256(password);
-    const { data: rows, error } = await sb.from("recruiter_auth").select("*").limit(1);
+    const { data: rows, error } = await sb.from("recruiter_auth").select("*").eq("email", email).limit(1);
     if (error) return { ok: false, error: error.message };
     if (!rows || rows.length === 0) {
-      const ins = await sb.from("recruiter_auth").insert({ email: email || "recruiter", password_hash: passHash }).select().single();
+      if (!createIfMissing) return { ok: false, error: "Account not found. Create one first." };
+      const ins = await sb.from("recruiter_auth").insert({ email, password_hash: passHash }).select().single();
       if (ins.error) return { ok: false, error: ins.error.message };
-      const session = { username: email || "recruiter", role: "recruiter", name: "Recruiter" };
+      const session = { username: email, role: "recruiter", name: "Recruiter" };
       setSession(session);
       return { ok: true, session, setup: true };
     }
     const rec = rows[0];
-    if (rec.email && email && rec.email !== email) return { ok: false, error: "Email does not match configured recruiter" };
     if (rec.password_hash !== passHash) return { ok: false, error: "Invalid password" };
-    const session = { username: rec.email || "recruiter", role: "recruiter", name: "Recruiter" };
+    const session = { username: rec.email || email, role: "recruiter", name: "Recruiter" };
     setSession(session);
     return { ok: true, session };
   }
