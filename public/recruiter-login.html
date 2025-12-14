@@ -22,7 +22,10 @@
           <label class="flex flex-col"><p class="pb-2 text-sm font-medium text-[#111418] dark:text-gray-300">Email Address</p><input id="email" class="form-input h-12 w-full flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-base text-[#111418] dark:text-white placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="recruiter@demo.com" /></label>
           <label class="flex flex-col"><div class="flex items-baseline justify-between"><p class="pb-2 text-sm font-medium text-[#111418] dark:text-gray-300">Password</p></div><input id="password" class="form-input h-12 w-full flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-base text-[#111418] dark:text-white placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="1234" type="password" /></label>
           <p id="login-error" class="text-sm text-red-600 hidden">Invalid credentials</p>
-          <button id="login-btn" class="flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-base font-semibold text-white hover:bg-primary/90">Sign In</button>
+          <div class="flex flex-col gap-2">
+            <button id="login-btn" class="flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-base font-semibold text-white hover:bg-primary/90">Sign In</button>
+            <button id="signup-btn" class="flex h-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 px-6 text-base font-semibold text-slate-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700">Create Recruiter Account</button>
+          </div>
           <a href="./index.html" class="text-center text-sm text-primary underline">Back to jobs</a>
         </div>
       </div>
@@ -31,20 +34,28 @@
     <script src="./js/supabaseClient.js"></script>
     <script src="./js/storage.js"></script>
     <script>
-      document.getElementById("login-btn").addEventListener("click", async () => {
+      async function handleAuth(isSignup) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         const err = document.getElementById("login-error");
+        err.classList.add("hidden");
         try {
           const res = await LPStorage.verifyOrSetupRecruiter(email, password);
           if (!res.ok) { err.textContent = res.error || "Invalid credentials"; err.classList.remove("hidden"); return; }
-          err.classList.add("hidden");
+          if (isSignup && !res.setup && res.session) {
+            // already exists
+            err.textContent = "Account exists. Sign in instead.";
+            err.classList.remove("hidden");
+            return;
+          }
           window.location.href = "./recruiter.html";
         } catch (e) {
           err.textContent = "Unexpected error";
           err.classList.remove("hidden");
         }
-      });
+      }
+      document.getElementById("login-btn").addEventListener("click", () => handleAuth(false));
+      document.getElementById("signup-btn").addEventListener("click", () => handleAuth(true));
     </script>
   </body>
 </html>
